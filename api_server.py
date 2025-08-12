@@ -12,7 +12,7 @@ import time
 import uuid
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 
 class GameCollectionAPIHandler(BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -263,7 +263,9 @@ class GameCollectionAPIHandler(BaseHTTPRequestHandler):
     def get_image(self, filename):
         """获取图片文件"""
         try:
-            image_path = os.path.join(self.images_dir, filename)
+            # URL解码文件名
+            decoded_filename = unquote(filename)
+            image_path = os.path.join(self.images_dir, decoded_filename)
             
             if not os.path.exists(image_path):
                 self.send_error(404, "Image not found")
