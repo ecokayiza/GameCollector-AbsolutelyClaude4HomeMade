@@ -1,0 +1,2 @@
+Pillow>=9.0.0
+argparse>=1.4.0

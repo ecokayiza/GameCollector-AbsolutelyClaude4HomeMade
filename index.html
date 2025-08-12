@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏记录收藏</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- 动态背景容器 -->
+    <div class="dynamic-background" id="dynamicBackground">
+    </div>
+    
+    <!-- 背景叠加层 -->
+    <div class="background-overlay"></div>
+    
+    <div class="container">
+        <!-- 头部区域 -->
+        <header class="header">
+            <h1><i class="fas fa-gamepad"></i> 游戏记录收藏</h1>
+            <button id="addGameBtn" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 添加游戏
+            </button>
+        </header>
+
+        <!-- 筛选区域 -->
+        <div class="filters">
+            <div class="filter-group">
+                <input type="text" id="searchInput" placeholder="搜索游戏名..." class="search-input">
+                <button id="searchBtn" class="btn btn-secondary">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            
+            <div class="filter-group">
+                <select id="yearFilter" class="filter-select">
+                    <option value="">所有年份</option>
+                </select>
+                <select id="monthFilter" class="filter-select">
+                    <option value="">所有月份</option>
+                    <option value="1">1月</option>
+                    <option value="2">2月</option>
+                    <option value="3">3月</option>
+                    <option value="4">4月</option>
+                    <option value="5">5月</option>
+                    <option value="6">6月</option>
+                    <option value="7">7月</option>
+                    <option value="8">8月</option>
+                    <option value="9">9月</option>
+                    <option value="10">10月</option>
+                    <option value="11">11月</option>
+                    <option value="12">12月</option>
+                </select>
+                <select id="categoryFilter" class="filter-select">
+                    <option value="">所有分类</option>
+                    <option value="ADV">ADV</option>
+                    <option value="ACT">ACT</option>
+                    <option value="RPG">RPG</option>
+                    <option value="SLG">SLG</option>
+                    <option value="3DSIM">3DSIM</option>
+                    <option value="OTHER">其他</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="sortOrder">排序方式:</label>
+                <select id="sortOrder" class="filter-select">
+                    <option value="date-desc">时间 ↓ (最新在前)</option>
+                    <option value="date-asc">时间 ↑ (最旧在前)</option>
+                    <option value="score-desc">评分 ↓ (高分在前)</option>
+                    <option value="score-asc">评分 ↑ (低分在前)</option>
+                    <option value="name-asc">名称 ↑ (A-Z)</option>
+                    <option value="name-desc">名称 ↓ (Z-A)</option>
+                </select>
+            </div>
+
+            <button id="clearFilters" class="btn btn-secondary">清除筛选</button>
+        </div>
+
+        <!-- 时间线容器 -->
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
+            <div id="gamesList" class="games-list">
+                <!-- 游戏记录将在这里动态生成 -->
+            </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="fas fa-gamepad"></i>
+            <h3>还没有游戏记录</h3>
+            <p>点击上方"添加游戏"按钮开始记录您的游戏历程吧！</p>
+        </div>
+    </div>
+
+    <!-- 添加/编辑游戏模态框 -->
+    <div id="gameModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">添加游戏记录</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="gameForm" class="modal-body">
+                <div class="form-group">
+                    <label for="gameName">游戏名称 *</label>
+                    <input type="text" id="gameName" name="gameName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="gameScore">评分 (0-10) *</label>
+                    <div class="score-slider-container">
+                        <input type="range" id="gameScore" name="gameScore" min="0" max="10" step="0.1" value="5" class="score-slider" required>
+                        <div class="score-display">
+                            <div id="scoreValue">5.0</div>
+                            <div id="scoreStars" class="score-stars">☆☆☆☆☆</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="gameCategory">游戏分类 *</label>
+                    <select id="gameCategory" name="gameCategory" required>
+                        <option value="">请选择分类</option>
+                        <option value="ADV">ADV - 冒险游戏</option>
+                        <option value="ACT">ACT - 动作游戏</option>
+                        <option value="RPG">RPG - 角色扮演</option>
+                        <option value="SLG">SLG - 策略游戏</option>
+                        <option value="3DSIM">3DSIM - 3D模拟</option>
+                        <option value="OTHER">其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="gameTime">游戏时长 (小时)</label>
+                    <input type="number" id="gameTime" name="gameTime" min="0" step="0.1" placeholder="可选">
+                </div>
+
+                <div class="form-group">
+                    <label for="gameComment">个人评论</label>
+                    <textarea id="gameComment" name="gameComment" rows="4" placeholder="分享您对这款游戏的想法..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>游戏封面</label>
+                    <div class="image-upload-area" id="imageUploadArea">
+                        <div class="upload-placeholder">
+                            <i class="fas fa-image"></i>
+                            <p>拖拽图片到此处或点击选择</p>
+                            <p>支持 Ctrl+V 粘贴图片</p>
+                        </div>
+                        <input type="file" id="coverImage" accept="image/*" style="display: none;">
+                        <div id="imagePreview" style="display: none;">
+                            <img id="previewImg" src="" alt="预览">
+                            <button type="button" id="removeImage" class="btn-remove-image">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameDate">记录时间 *</label>
+                    <input type="datetime-local" id="gameDate" name="gameDate" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 游戏详情模态框 -->
+    <div id="gameDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="detailTitle">游戏详情</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body" id="gameDetailContent">
+                <!-- 详情内容将在这里动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片查看器模态框 -->
+    <div id="imageViewer" class="modal image-viewer-modal">
+        <div class="image-viewer-content">
+            <span class="image-viewer-close">&times;</span>
+            <img id="viewerImage" src="" alt="">
+            <div class="image-viewer-caption" id="viewerCaption"></div>
+        </div>
+    </div>
+
+    <script src="fileSystemManager.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

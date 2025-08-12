@@ -1,0 +1,1167 @@
+/* 全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #1a1a2e;
+    min-height: 100vh;
+    color: #333;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* 动态背景样式 - 独立网格系统 */
+.dynamic-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr;
+    gap: 4px;
+    overflow: hidden;
+    padding: 2px;
+    background: transparent;
+    opacity: 0.6;
+    transform: perspective(1200px) rotateX(3deg) rotateY(-2deg) rotateZ(-3deg);
+    transform-origin: center center;
+}
+
+.background-grid-cell {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    transform: scale(0.95);
+    transform-origin: center center;
+}
+
+.background-cover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    opacity: 0.20;
+    transition: opacity 4s ease-in-out;
+    filter: blur(1.2px) brightness(0.8) saturate(1.3);
+    border-radius: 0;
+}
+
+.background-cover.fade-out {
+    opacity: 0;
+}
+
+.background-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        135deg,
+        rgba(102, 126, 234, 0.95) 0%,
+        rgba(118, 75, 162, 0.95) 50%,
+        rgba(26, 26, 46, 1.0) 100%
+    );
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* 响应式网格布局 */
+@media (max-width: 768px) {
+    .dynamic-background {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(4, 1fr);
+        background: transparent;
+        transform: perspective(800px) rotateX(2deg) rotateY(-1deg) rotateZ(-2deg);
+    }
+    
+    .background-grid-cell {
+        transform: scale(0.98);
+    }
+}
+
+@media (min-width: 1400px) {
+    .dynamic-background {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: 1fr;
+        background: transparent;
+        transform: perspective(1400px) rotateX(4deg) rotateY(-3deg) rotateZ(-4deg);
+    }
+    
+    .background-grid-cell {
+        transform: scale(0.92);
+    }
+}
+
+/* 为不同跨度的元素添加特殊样式 */
+.background-cover[style*="span 2"] {
+    filter: blur(1px) brightness(0.9) saturate(1.4);
+}
+
+.background-cover[style*="span 3"] {
+    filter: blur(0.8px) brightness(1.0) saturate(1.5);
+}
+
+.background-cover:nth-child(2n) {
+    animation-delay: -5s;
+    filter: blur(1px) brightness(0.9) saturate(1.2);
+}
+
+.background-cover:nth-child(3n) {
+    animation-delay: -10s;
+    filter: blur(1.5px) brightness(0.7) saturate(1.4);
+}
+
+.background-cover:nth-child(4n) {
+    animation-delay: -15s;
+    filter: blur(1.1px) brightness(1.0) saturate(1.1);
+}
+
+.background-cover:nth-child(5n) {
+    animation-delay: -20s;
+    filter: blur(1.4px) brightness(0.6) saturate(1.5);
+}
+
+@keyframes floatAndRotate {
+    0%, 100% {
+        transform: scale(1) rotate(0deg) translateY(0);
+        opacity: 0.20;
+    }
+    25% {
+        transform: scale(1.08) rotate(1deg) translateY(-10px);
+        opacity: 0.28;
+    }
+    50% {
+        transform: scale(1.03) rotate(-0.5deg) translateY(5px);
+        opacity: 0.24;
+    }
+    75% {
+        transform: scale(1.12) rotate(0.8deg) translateY(-15px);
+        opacity: 0.32;
+    }
+}
+
+.background-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        135deg,
+        rgba(45, 55, 90, 0.30) 0%,
+        rgba(60, 70, 120, 0.35) 25%,
+        rgba(80, 60, 140, 0.40) 50%,
+        rgba(100, 50, 160, 0.45) 75%,
+        rgba(35, 40, 75, 0.55) 100%
+    );
+    z-index: 1;
+    backdrop-filter: blur(0.2px);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+/* 头部样式 */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    color: #4a5568;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.header h1 i {
+    color: #667eea;
+    margin-right: 10px;
+}
+
+/* 按钮样式 */
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #f7fafc;
+    color: #4a5568;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #edf2f7;
+    transform: translateY(-1px);
+}
+
+/* 筛选区域 */
+.filters {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    margin-bottom: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-input {
+    padding: 10px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 250px;
+    transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.filter-select {
+    padding: 10px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* 时间线容器 */
+.timeline-container {
+    position: relative;
+    padding: 0 20px;
+}
+
+.timeline-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+    transform: translateX(-50%);
+    z-index: 1;
+}
+
+.games-list {
+    position: relative;
+    z-index: 2;
+}
+
+/* 游戏卡片样式 */
+.game-item {
+    position: relative;
+    margin: 40px 0;
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    animation: slideIn 0.6s ease forwards;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.game-item:nth-child(even) {
+    flex-direction: row-reverse;
+}
+
+.game-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    width: 38%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 250px;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+.game-card-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.game-cover {
+    width: 100%;
+    height: 0;
+    padding-bottom: 60%; /* 调整为更紧凑的5:3比例 */
+    border-radius: 15px 15px 0 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 48px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.game-cover i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+.game-card:hover .game-cover {
+    transform: scale(1.02);
+}
+
+.cover-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 15px 15px 0 0;
+    transition: transform 0.3s ease;
+}
+
+.game-card:hover .cover-image {
+    transform: scale(1.05);
+}
+
+.game-info {
+    flex: 1;
+    padding: 12px 16px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.game-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 8px;
+    line-height: 1.3;
+    text-align: center;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.game-score-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 12px;
+}
+
+.game-category-time {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.game-category {
+    font-size: 18px;
+    font-weight: 600;
+    color: #4a5568;
+    background: rgba(74, 85, 104, 0.1);
+    padding: 4px 10px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.game-time {
+    font-size: 16px;
+    font-weight: 500;
+    color: #718096;
+    opacity: 0.8;
+    white-space: nowrap;
+}
+
+.game-score {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: 1;
+}
+
+.score-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    min-width: fit-content;
+}
+
+.stars {
+    color: #ffd700;
+    font-size: 16px;
+}
+
+.game-meta {
+    font-size: 12px;
+    color: #718096;
+    margin-bottom: 8px;
+    opacity: 0.8;
+    font-weight: 500;
+}
+
+.game-preview {
+    font-size: 16px;
+    color: #4a5568;
+    line-height: 1.3;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    flex: 1;
+    margin-top: auto;
+}
+
+/* 时间线节点 */
+.timeline-node {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    background: #667eea;
+    border: 4px solid white;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.game-item:nth-child(even) .timeline-node {
+    left: 50%;
+}
+
+/* 时间标签 */
+.time-label {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4a5568;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    top: -15px;
+}
+
+/* 空状态 */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.empty-state i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.6;
+}
+
+.empty-state h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    font-size: 16px;
+    opacity: 0.8;
+}
+
+/* 模态框样式 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: white;
+    margin: 3% auto;
+    padding: 0;
+    border-radius: 15px;
+    width: 95%;
+    max-width: 900px;
+    max-height: 95vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h2 {
+    color: #2d3748;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.close {
+    font-size: 28px;
+    font-weight: bold;
+    color: #a0aec0;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: #4a5568;
+}
+
+.modal-body {
+    padding: 35px;
+}
+
+/* 表单样式 */
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* 评分滑动条样式 */
+.score-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.score-slider {
+    flex: 1;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, #e2e8f0 0%, #667eea 50%, #764ba2 100%);
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+.score-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+}
+
+.score-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.score-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.score-display {
+    min-width: 80px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+}
+
+.score-stars {
+    display: flex;
+    gap: 2px;
+    color: #ffd700;
+    font-size: 16px;
+}
+
+/* 图片上传区域 */
+.image-upload-area {
+    position: relative;
+    border: 2px dashed #cbd5e0;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.image-upload-area:hover {
+    border-color: #667eea;
+    background: #f7fafc;
+}
+
+.image-upload-area.dragover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.upload-placeholder i {
+    font-size: 48px;
+    color: #cbd5e0;
+    margin-bottom: 15px;
+}
+
+.upload-placeholder p {
+    color: #718096;
+    margin: 5px 0;
+}
+
+#imagePreview {
+    position: relative;
+    display: inline-block;
+}
+
+#previewImg {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-remove-image {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: #e53e3e;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.btn-remove-image:hover {
+    transform: scale(1.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* 游戏详情样式 */
+.game-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.detail-header {
+    display: flex;
+    gap: 25px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.detail-cover {
+    width: 500px;
+    height: 500px;
+    border-radius: 15px;
+    object-fit: cover;
+    background: #f7fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a0aec0;
+    font-size: 64px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.detail-cover:hover {
+    transform: scale(1.02);
+}
+
+.detail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 15px;
+    display: block;
+}
+
+.detail-info {
+    flex: 1;
+}
+
+.detail-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 15px;
+}
+
+.detail-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.meta-item {
+    background: #f7fafc;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.meta-label {
+    font-size: 12px;
+    color: #718096;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.meta-value {
+    font-size: 16px;
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.detail-comment {
+    background: #f7fafc;
+    padding: 20px;
+    border-radius: 12px;
+    line-height: 1.6;
+    color: #4a5568;
+    margin-top: 20px;
+}
+
+.detail-comment h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 12px;
+    margin-top: 0;
+}
+
+.detail-comment p {
+    margin: 0;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.btn-edit {
+    background: #38a169;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #2f855a;
+}
+
+.btn-delete {
+    background: #e53e3e;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #c53030;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        justify-content: space-between;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+    
+    .game-item,
+    .game-item:nth-child(even) {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .game-card {
+        width: 85%;
+        margin: 15px 0;
+        min-height: 240px;
+    }
+    
+    .game-cover {
+        padding-bottom: 60%; /* 保持5:3比例 */
+    }
+    
+    .game-info {
+        padding: 10px 12px 12px 12px;
+    }
+    
+    .game-title {
+        font-size: 20px;
+        text-align: center;
+    }
+    
+    .game-score-meta {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .game-category-time {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .game-category {
+        font-size: 12px;
+    }
+    
+    .game-time {
+        font-size: 11px;
+    }
+    
+    .game-score {
+        justify-content: center;
+    }
+    
+    .game-card-content {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: left;
+        gap: 0;
+    }
+    
+    .timeline-line {
+        left: 20px;
+    }
+    
+    .timeline-node {
+        left: 20px;
+    }
+    
+    .time-label {
+        left: 50px;
+        transform: none;
+    }
+    
+    .modal-content {
+        width: 98%;
+        margin: 1% auto;
+        max-height: 98vh;
+    }
+    
+    .detail-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 20px;
+    }
+    
+    .detail-cover {
+        width: 200px;
+        height: 200px;
+        margin-bottom: 10px;
+    }
+    
+    .score-slider-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .score-display {
+        min-width: auto;
+        width: 100%;
+    }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #5a67d8;
+}
+
+/* 图片查看器样式 */
+.image-viewer-modal {
+    z-index: 2000;
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.image-viewer-content {
+    position: relative;
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    max-width: 95vw;
+    max-height: 95vh;
+    margin: 2.5vh auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-viewer-close {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    color: #fff;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 2001;
+    transition: color 0.3s ease;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.image-viewer-close:hover,
+.image-viewer-close:focus {
+    color: #667eea;
+    text-decoration: none;
+}
+
+#viewerImage {
+    max-width: 90vw;
+    max-height: 85vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+}
+
+.image-viewer-caption {
+    color: #fff;
+    text-align: center;
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    margin-top: 15px;
+    backdrop-filter: blur(5px);
+}
+
+/* 可点击图片样式 */
+.clickable-image {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.clickable-image:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* 背景元素淡入淡出动画 */
+.background-cover {
+    transition: opacity 2.5s ease;
+}
+
+.background-cover.fade-out {
+    opacity: 0 !important;
+}
+
+.background-cover.fade-in {
+    opacity: 0;
+    animation: fadeInBackground 2.5s ease forwards;
+}
+
+@keyframes fadeInBackground {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
