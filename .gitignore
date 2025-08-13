@@ -36,3 +36,8 @@ temp/
 # User data (optional - remove this line if you want to include sample data)
 data/games.json
 data/images/
+
+# packages
+node_modules/
+# Build output
+dist/

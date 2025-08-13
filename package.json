@@ -1,0 +1,73 @@
+{
+  "name": "game-collection-app",
+  "version": "1.0.0",
+  "description": "游戏记录收藏桌面应用",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win",
+    "build-mac": "electron-builder --mac",
+    "build-linux": "electron-builder --linux",
+    "pack": "electron-builder --dir",
+    "dist": "pnpm run build",
+    "clean": "rimraf dist",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [
+    "游戏",
+    "收藏",
+    "记录",
+    "桌面应用",
+    "electron"
+  ],
+  "author": "Game Collector",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "electron-icon-builder": "^2.0.1",
+    "sharp": "^0.34.3"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0"
+  },
+  "build": {
+    "appId": "com.gamecollector.app",
+    "productName": "游戏收藏记录",
+    "directories": {
+      "output": "dist"
+    },
+    "asar": false,
+    "compression": "maximum",
+    "removePackageScripts": true,
+    "files": [
+      "main.js",
+      "index.html",
+      "script.js",
+      "styles.css",
+      "fileSystemManager.js",
+      "assets/default.png",
+      "assets/icon.ico",
+      "data/**/*",
+      "package.json",
+      "!**/*.md",
+      "!dist/",
+      "!node_modules/",
+      "!.git/"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Collector",
+      "differentialPackage": false
+    }
+  }
+}

@@ -1,12 +1,33 @@
 /**
  * 文件系统管理器
- * 通过API服务器处理本地文件的读写操作，包括游戏数据和图片文件
+ * 在Electron环境中直接处理本地文件，在Web环境中通过API服务器处理
  */
 class FileSystemManager {
     constructor() {
         this.apiBaseUrl = window.location.origin;
         this.games = [];
         this.initialized = false;
+        this.isElectron = typeof window !== 'undefined' && window.require && window.require('electron');
+        this.dataFilePath = './data/games.json';
+        this.imagesDir = './data/images/';
+        
+        console.log('FileSystemManager initialized, isElectron:', this.isElectron);
+    }
+
+    /**
+     * 清理文件名，移除不安全的字符
+     */
+    sanitizeFilename(name) {
+        if (!name || typeof name !== 'string') {
+            return 'unnamed';
+        }
+        
+        // 移除不安全的文件名字符，保留中文、英文、数字、空格、短横线、下划线
+        return name
+            .replace(/[<>:"/\\|?*]/g, '') // 移除Windows不允许的字符
+            .replace(/\s+/g, '_') // 将空格替换为下划线
+            .replace(/[^\w\u4e00-\u9fa5\-_.]/g, '') // 只保留安全字符
+            .substring(0, 50); // 限制长度
     }
 
     /**
@@ -16,14 +37,78 @@ class FileSystemManager {
         if (this.initialized) return;
         
         try {
-            // 从API服务器加载数据
-            await this.loadGamesFromServer();
+            if (this.isElectron) {
+                // Electron环境：直接读取本地文件
+                await this.loadGamesFromFile();
+            } else {
+                // Web环境：从API服务器加载数据
+                await this.loadGamesFromServer();
+            }
             this.initialized = true;
             console.log('文件系统管理器初始化完成');
         } catch (error) {
             console.error('初始化文件系统失败:', error);
             this.games = [];
             this.initialized = true;
+        }
+    }
+
+    /**
+     * 从本地文件加载游戏数据 (Electron环境)
+     */
+    async loadGamesFromFile() {
+        try {
+            const { ipcRenderer } = require('electron');
+            console.log('尝试从本地文件加载数据:', this.dataFilePath);
+            const result = await ipcRenderer.invoke('read-file', this.dataFilePath);
+            
+            console.log('读取文件结果:', result);
+            
+            if (result.success) {
+                const games = JSON.parse(result.data);
+                if (Array.isArray(games)) {
+                    this.games = games;
+                    // 修复从Web版本迁移过来的数据
+                    await this.migrateWebDataToElectron();
+                    console.log(`✅ 从本地文件加载了 ${this.games.length} 个游戏记录`);
+                } else {
+                    console.warn('本地文件数据格式不正确，重置为空数组');
+                    this.games = [];
+                }
+            } else {
+                console.log('本地文件不存在或读取失败，创建空数据文件');
+                this.games = [];
+                await this.saveGamesToFile();
+            }
+        } catch (error) {
+            console.error('从本地文件加载数据失败:', error);
+            this.games = [];
+        }
+    }
+
+    /**
+     * 保存游戏数据到本地文件 (Electron环境)
+     */
+    async saveGamesToFile() {
+        try {
+            const { ipcRenderer } = require('electron');
+            console.log('尝试保存游戏数据到本地文件:', this.dataFilePath);
+            console.log('要保存的游戏数量:', this.games.length);
+            
+            const jsonData = JSON.stringify(this.games, null, 2);
+            const result = await ipcRenderer.invoke('write-file', this.dataFilePath, jsonData);
+            
+            console.log('保存文件结果:', result);
+            
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+            
+            console.log('✅ 游戏数据已保存到本地文件');
+            return true;
+        } catch (error) {
+            console.error('❌ 保存游戏数据到本地文件失败:', error);
+            throw error;
         }
     }
 
@@ -69,39 +154,73 @@ class FileSystemManager {
      */
     async addGame(gameData, imageFile) {
         try {
-            // 准备发送的数据
-            const dataToSend = {
+            // 生成唯一ID
+            const id = this.generateUniqueId();
+            
+            // 准备游戏数据
+            const newGame = {
+                id: id,
                 name: gameData.name,
                 score: parseFloat(gameData.score),
                 category: gameData.category || 'OTHER',
                 playTime: gameData.playTime ? parseFloat(gameData.playTime) : null,
                 recordDate: gameData.recordDate,
                 comment: gameData.comment || '',
+                imagePath: null
             };
 
             // 处理图片文件
             if (imageFile) {
-                const imageData = await this.convertImageToBase64(imageFile);
-                dataToSend.imageData = imageData;
+                if (this.isElectron) {
+                    // Electron环境：保存图片到本地文件
+                    const imageData = await this.convertImageToBase64(imageFile);
+                    const safeName = this.sanitizeFilename(gameData.name);
+                    const filename = `${safeName}_${Date.now()}.png`;
+                    
+                    const { ipcRenderer } = require('electron');
+                    const saveResult = await ipcRenderer.invoke('save-image', imageData, filename);
+                    
+                    if (saveResult.success) {
+                        newGame.imagePath = filename;
+                        newGame.imageUrl = `./data/images/${filename}`;
+                        console.log('✅ 图片已保存到本地:', filename);
+                    } else {
+                        console.error('❌ 图片保存失败:', saveResult.error);
+                        // fallback to base64
+                        newGame.imageData = imageData;
+                        newGame.imageUrl = imageData;
+                    }
+                } else {
+                    // Web环境：转换为base64
+                    const imageData = await this.convertImageToBase64(imageFile);
+                    newGame.imageData = imageData;
+                    newGame.imageUrl = imageData;
+                }
             }
 
-            // 发送到服务器
-            const response = await fetch(`${this.apiBaseUrl}/api/games`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(dataToSend)
-            });
+            if (this.isElectron) {
+                // Electron环境：保存到本地文件
+                console.log('📝 添加游戏到Electron环境，游戏数据:', newGame);
+                this.games.push(newGame);
+                await this.saveGamesToFile();
+                console.log('✅ 游戏已添加并保存到本地文件');
+            } else {
+                // Web环境：发送到服务器
+                const response = await fetch(`${this.apiBaseUrl}/api/games`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newGame)
+                });
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const serverGame = await response.json();
+                this.games.push(serverGame);
             }
-
-            const newGame = await response.json();
-            
-            // 更新本地缓存
-            this.games.push(newGame);
             
             console.log('游戏记录添加成功:', newGame.name);
             return newGame;
@@ -116,41 +235,81 @@ class FileSystemManager {
      */
     async updateGame(id, gameData, imageFile) {
         try {
-            // 准备发送的数据
-            const dataToSend = {
+            // 查找要更新的游戏
+            const gameIndex = this.games.findIndex(game => game.id === id);
+            if (gameIndex === -1) {
+                throw new Error('游戏记录不存在');
+            }
+
+            // 准备更新的数据
+            const updatedGame = {
+                ...this.games[gameIndex],
                 name: gameData.name,
                 score: parseFloat(gameData.score),
                 category: gameData.category || 'OTHER',
                 playTime: gameData.playTime ? parseFloat(gameData.playTime) : null,
                 recordDate: gameData.recordDate,
-                comment: gameData.comment || '',
+                comment: gameData.comment || ''
             };
 
             // 处理图片文件
             if (imageFile) {
-                const imageData = await this.convertImageToBase64(imageFile);
-                dataToSend.imageData = imageData;
+                if (this.isElectron) {
+                    // Electron环境：保存新图片到本地文件
+                    const imageData = await this.convertImageToBase64(imageFile);
+                    const safeName = this.sanitizeFilename(gameData.name);
+                    const filename = `${safeName}_${Date.now()}.png`;
+                    
+                    const { ipcRenderer } = require('electron');
+                    
+                    // 如果有旧图片，先删除
+                    if (updatedGame.imagePath) {
+                        await ipcRenderer.invoke('delete-image', updatedGame.imagePath);
+                    }
+                    
+                    // 保存新图片
+                    const saveResult = await ipcRenderer.invoke('save-image', imageData, filename);
+                    
+                    if (saveResult.success) {
+                        updatedGame.imagePath = filename;
+                        updatedGame.imageUrl = `./data/images/${filename}`;
+                        // 清除旧的base64数据
+                        delete updatedGame.imageData;
+                        console.log('✅ 图片已更新并保存到本地:', filename);
+                    } else {
+                        console.error('❌ 图片保存失败:', saveResult.error);
+                        // fallback to base64
+                        updatedGame.imageData = imageData;
+                        updatedGame.imageUrl = imageData;
+                    }
+                } else {
+                    // Web环境：转换为base64
+                    const imageData = await this.convertImageToBase64(imageFile);
+                    updatedGame.imageData = imageData;
+                    updatedGame.imageUrl = imageData;
+                }
             }
 
-            // 发送到服务器
-            const response = await fetch(`${this.apiBaseUrl}/api/games/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(dataToSend)
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const updatedGame = await response.json();
-            
-            // 更新本地缓存
-            const gameIndex = this.games.findIndex(game => game.id === id);
-            if (gameIndex !== -1) {
+            if (this.isElectron) {
+                // Electron环境：更新本地文件
                 this.games[gameIndex] = updatedGame;
+                await this.saveGamesToFile();
+            } else {
+                // Web环境：发送到服务器
+                const response = await fetch(`${this.apiBaseUrl}/api/games/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedGame)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const serverGame = await response.json();
+                this.games[gameIndex] = serverGame;
             }
             
             console.log('游戏记录更新成功:', updatedGame.name);
@@ -166,25 +325,53 @@ class FileSystemManager {
      */
     async deleteGame(id) {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/api/games/${id}`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const gameIndex = this.games.findIndex(game => game.id === id);
+            if (gameIndex === -1) {
+                throw new Error('游戏记录不存在');
             }
 
-            // 更新本地缓存
-            const gameIndex = this.games.findIndex(game => game.id === id);
-            if (gameIndex !== -1) {
-                const game = this.games[gameIndex];
+            const game = this.games[gameIndex];
+
+            if (this.isElectron) {
+                // Electron环境：删除关联的图片文件，然后删除游戏记录
+                
+                // 如果有图片文件，先删除它
+                if (game.imagePath) {
+                    try {
+                        const { ipcRenderer } = require('electron');
+                        const deleteResult = await ipcRenderer.invoke('delete-image', game.imagePath);
+                        
+                        if (deleteResult.success) {
+                            console.log('✅ 图片文件已删除:', game.imagePath);
+                        } else {
+                            console.warn('⚠️ 图片文件删除失败:', deleteResult.error);
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ 删除图片文件时出错:', error);
+                    }
+                }
+                
+                // 删除游戏记录
                 this.games.splice(gameIndex, 1);
-                console.log('游戏记录删除成功:', game.name);
+                await this.saveGamesToFile();
+            } else {
+                // Web环境：发送删除请求到服务器
+                const response = await fetch(`${this.apiBaseUrl}/api/games/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                // 更新本地缓存
+                this.games.splice(gameIndex, 1);
             }
             
+            console.log('✅ 游戏记录删除成功:', game.name);
             return true;
         } catch (error) {
-            console.error('删除游戏记录失败:', error);
+            console.error('❌ 删除游戏记录失败:', error);
             throw error;
         }
     }
@@ -206,7 +393,7 @@ class FileSystemManager {
     }
 
     /**
-     * 生成唯一ID - 保留用于兼容性
+     * 生成唯一ID
      */
     generateUniqueId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -337,6 +524,52 @@ class FileSystemManager {
         });
 
         return stats;
+    }
+
+    /**
+     * 迁移Web版本数据到Electron格式
+     */
+    async migrateWebDataToElectron() {
+        let needsSave = false;
+        
+        for (let game of this.games) {
+            // 检查是否有API格式的imageUrl需要转换
+            if (game.imageUrl && game.imageUrl.startsWith('/api/image/')) {
+                console.log('🔄 迁移游戏图片数据:', game.name);
+                
+                // 清除API格式的URL，在Electron中不适用
+                game.imageUrl = null;
+                needsSave = true;
+            }
+            
+            // 如果有imagePath但没有imageUrl，尝试从images目录加载
+            if (game.imagePath && !game.imageUrl) {
+                const imagePath = `./data/images/${game.imagePath}`;
+                try {
+                    const { ipcRenderer } = require('electron');
+                    const result = await ipcRenderer.invoke('read-file', imagePath);
+                    if (result.success) {
+                        // 读取图片文件并转换为base64
+                        const fs = require('fs');
+                        const path = require('path');
+                        const fullPath = path.resolve(__dirname, imagePath);
+                        const imageData = fs.readFileSync(fullPath);
+                        const base64 = `data:image/png;base64,${imageData.toString('base64')}`;
+                        game.imageUrl = base64;
+                        game.imageData = base64;
+                        needsSave = true;
+                        console.log('✅ 已迁移图片:', game.imagePath);
+                    }
+                } catch (error) {
+                    console.warn('⚠️ 无法加载图片文件:', game.imagePath, error.message);
+                }
+            }
+        }
+        
+        if (needsSave) {
+            await this.saveGamesToFile();
+            console.log('✅ 数据迁移完成并已保存');
+        }
     }
 }
 

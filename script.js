@@ -590,7 +590,7 @@ class GameCollectionApp {
                     <div class="game-cover">
                         ${game.imageUrl ? 
                             `<img src="${game.imageUrl}" alt="${game.name}" class="cover-image">` : 
-                            '<i class="fas fa-gamepad"></i>'
+                            `<img src="./assets/default.png" alt="默认封面" class="cover-image">`
                         }
                     </div>
                     <div class="game-info">
@@ -672,7 +672,7 @@ class GameCollectionApp {
                     <div class="detail-cover">
                         ${game.imageUrl ? 
                             `<img src="${game.imageUrl}" alt="${game.name}" class="detail-image clickable-image" onclick="app.showImageViewer('${game.imageUrl}', '${this.escapeHtml(game.name)}')">` : 
-                            '<i class="fas fa-gamepad"></i>'
+                            `<img src="./assets/default.png" alt="默认封面" class="detail-image">`
                         }
                     </div>
                     <div class="detail-info">
