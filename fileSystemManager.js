@@ -241,7 +241,7 @@ class FileSystemManager {
                 throw new Error('游戏记录不存在');
             }
 
-            // 准备更新的数据
+            // 准备更新的数据，保持现有的图片相关字段
             const updatedGame = {
                 ...this.games[gameIndex],
                 name: gameData.name,
@@ -288,6 +288,10 @@ class FileSystemManager {
                     updatedGame.imageData = imageData;
                     updatedGame.imageUrl = imageData;
                 }
+            } else {
+                // 如果没有提供新图片，保持原有的图片数据不变
+                // 这样可以确保编辑游戏时不改变图片的情况下，图片信息不会丢失
+                console.log('🖼️ 保持原有图片数据不变:', updatedGame.imageUrl ? '有图片' : '无图片');
             }
 
             if (this.isElectron) {

@@ -414,6 +414,11 @@ class GameCollectionApp {
         
         this.updateScoreStars(game.score, document.getElementById('scoreStars'));
 
+        // 清除之前的图片文件状态
+        const fileInput = document.getElementById('coverImage');
+        fileInput.value = '';
+        fileInput.currentFile = null;
+
         // 显示现有图片
         if (game.imageUrl) {
             const previewImg = document.getElementById('previewImg');
@@ -423,6 +428,13 @@ class GameCollectionApp {
             previewImg.src = game.imageUrl;
             imagePreview.style.display = 'block';
             uploadPlaceholder.style.display = 'none';
+        } else {
+            // 如果没有图片，确保显示上传提示
+            const imagePreview = document.getElementById('imagePreview');
+            const uploadPlaceholder = document.querySelector('.upload-placeholder');
+
+            imagePreview.style.display = 'none';
+            uploadPlaceholder.style.display = 'block';
         }
     }
 
