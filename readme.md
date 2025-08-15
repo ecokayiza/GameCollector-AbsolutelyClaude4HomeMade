@@ -1,8 +1,6 @@
 
 【测试内容，完全由`Claude Sonnet 4`生成，自用】
 
-![demo](test/demo.png)
-
 # 🎮 游戏记录收藏器
 一个现代化的游戏收藏管理Web应用，具有精美的3D背景效果。
 ![demo](test/demo.png)
