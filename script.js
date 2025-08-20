@@ -12,14 +12,9 @@ class GameCollectionApp {
             scoreMax: 10,
             category: ''
         };
-        this.gameCategories = {
-            'ADV': '冒险游戏',
-            'ACT': '动作游戏',
-            'RPG': '角色扮演',
-            'SLG': '策略游戏',
-            '3DSIM': '3D模拟',
-            'OTHER': '其他'
-        };
+    this.gameCategories = {};
+    this.categoryCodes = [];
+    this.categoryConfigLoaded = false;
     }
 
     /**
@@ -33,26 +28,65 @@ class GameCollectionApp {
             await window.fileSystemManager.initialize();
             console.log('文件系统管理器初始化完成');
             
+            // 加载分类配置
+            await this.loadCategoryConfig();
+            console.log('分类配置加载完成');
+
             // 初始化背景系统
             this.initializeBackground();
             console.log('背景系统初始化完成');
-            
+
             // 绑定事件
             this.bindEvents();
             console.log('事件绑定完成');
-            
+
             // 初始化界面
             this.initializeInterface();
             console.log('界面初始化完成');
-            
+
             // 加载游戏数据
             await this.loadGames();
             console.log('游戏数据加载完成');
-            
+
             console.log('游戏收藏应用初始化完成');
         } catch (error) {
             console.error('应用初始化失败:', error);
             this.showError('应用初始化失败: ' + error.message);
+        }
+    }
+
+    /**
+     * 加载分类配置
+     */
+    async loadCategoryConfig() {
+        try {
+            const response = await fetch('./config.json');
+            if (!response.ok) throw new Error('无法加载分类配置文件');
+            const config = await response.json();
+            this.gameCategories = {};
+            this.categoryCodes = [];
+            if (Array.isArray(config.categories)) {
+                config.categories.forEach(cat => {
+                    this.gameCategories[cat.code] = cat.name;
+                    this.categoryCodes.push(cat.code);
+                });
+            }
+            this.gameCategories['OTHER'] = '其他';
+            this.categoryCodes.push('OTHER');
+            this.categoryConfigLoaded = true;
+        } catch (e) {
+            // 加载失败则使用默认分类
+            this.gameCategories = {
+                'ADV': '冒险游戏',
+                'ACT': '动作游戏',
+                'RPG': '角色扮演',
+                'SLG': '策略游戏',
+                '3DSIM': '3D模拟',
+                'OTHER': '其他'
+            };
+            this.categoryCodes = Object.keys(this.gameCategories);
+            this.categoryConfigLoaded = false;
+            console.error('分类配置加载失败，使用默认分类', e);
         }
     }
 
@@ -260,6 +294,23 @@ class GameCollectionApp {
 
         // 确保表单中有分类选择
         this.addCategorySelect();
+
+    // 动态渲染筛选区分类下拉框
+    this.renderCategoryFilter();
+    }
+    /**
+     * 动态渲染筛选区分类下拉框
+     */
+    renderCategoryFilter() {
+        const categoryFilter = document.getElementById('categoryFilter');
+        if (!categoryFilter) return;
+        let optionsHtml = '<option value="">所有分类</option>';
+        for (const code of this.categoryCodes) {
+            if (code === 'OTHER') continue;
+            optionsHtml += `<option value="${code}">${code} - ${this.gameCategories[code]}</option>`;
+        }
+        optionsHtml += `<option value="OTHER">OTHER - 其他</option>`;
+        categoryFilter.innerHTML = optionsHtml;
     }
 
     /**
@@ -270,25 +321,22 @@ class GameCollectionApp {
         if (document.getElementById('gameCategory')) {
             return; // 已存在，不需要添加
         }
-
         const gameTimeGroup = document.getElementById('gameTime').closest('.form-group');
-        
         // 创建分类选择表单组
         const categoryGroup = document.createElement('div');
         categoryGroup.className = 'form-group';
+        let optionsHtml = '<option value="">请选择分类</option>';
+        for (const code of this.categoryCodes) {
+            if (code === 'OTHER') continue;
+            optionsHtml += `<option value="${code}">${code} - ${this.gameCategories[code]}</option>`;
+        }
+        optionsHtml += `<option value="OTHER">OTHER - 其他</option>`;
         categoryGroup.innerHTML = `
             <label for="gameCategory">游戏分类 *</label>
             <select id="gameCategory" name="gameCategory" required>
-                <option value="">请选择分类</option>
-                <option value="ADV">ADV - 冒险游戏</option>
-                <option value="ACT">ACT - 动作游戏</option>
-                <option value="RPG">RPG - 角色扮演</option>
-                <option value="SLG">SLG - 策略游戏</option>
-                <option value="3DSIM">3DSIM - 3D模拟</option>
-                <option value="OTHER">其他</option>
+                ${optionsHtml}
             </select>
         `;
-        
         // 在游戏时长后面插入分类选择
         gameTimeGroup.parentNode.insertBefore(categoryGroup, gameTimeGroup.nextSibling);
     }
@@ -591,8 +639,9 @@ class GameCollectionApp {
         // 生成星星评分
         const stars = this.generateStars(game.score);
         
-        // 分类显示名称 - 使用原始英文大写
-        const categoryName = game.category || 'OTHER';
+    // 分类显示名称 - 优先使用配置名，否则归为其他
+    let categoryName = this.gameCategories[game.category];
+    if (!categoryName) categoryName = this.gameCategories['OTHER'];
 
         gameItem.innerHTML = `
             <div class="timeline-node"></div>
@@ -675,7 +724,8 @@ class GameCollectionApp {
             });
         }
 
-        const categoryName = game.category || 'OTHER';
+    let categoryName = this.gameCategories[game.category];
+    if (!categoryName) categoryName = this.gameCategories['OTHER'];
         const stars = this.generateStars(game.score);
 
         content.innerHTML = `

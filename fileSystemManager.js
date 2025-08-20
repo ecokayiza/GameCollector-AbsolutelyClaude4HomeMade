@@ -3,6 +3,37 @@
  * 在Electron环境中直接处理本地文件，在Web环境中通过API服务器处理
  */
 class FileSystemManager {
+    // 分类配置缓存
+    categoryConfig = null;
+    categoryCodes = null;
+    async loadCategoryConfig() {
+        if (this.categoryConfig && this.categoryCodes) return;
+        try {
+            const response = await fetch('./config.json');
+            if (!response.ok) throw new Error('无法加载分类配置文件');
+            const config = await response.json();
+            this.categoryConfig = {};
+            this.categoryCodes = [];
+            if (Array.isArray(config.categories)) {
+                config.categories.forEach(cat => {
+                    this.categoryConfig[cat.code] = cat.name;
+                    this.categoryCodes.push(cat.code);
+                });
+            }
+            this.categoryConfig['OTHER'] = '其他';
+            this.categoryCodes.push('OTHER');
+        } catch (e) {
+            this.categoryConfig = {
+                'ADV': '冒险游戏',
+                'ACT': '动作游戏',
+                'RPG': '角色扮演',
+                'SLG': '策略游戏',
+                '3DSIM': '3D模拟',
+                'OTHER': '其他'
+            };
+            this.categoryCodes = Object.keys(this.categoryConfig);
+        }
+    }
     constructor() {
         this.apiBaseUrl = window.location.origin;
         this.games = [];
@@ -153,6 +184,10 @@ class FileSystemManager {
      * 添加新游戏记录
      */
     async addGame(gameData, imageFile) {
+        await this.loadCategoryConfig();
+        if (!this.categoryCodes.includes(gameData.category)) {
+            gameData.category = 'OTHER';
+        }
         try {
             // 生成唯一ID
             const id = this.generateUniqueId();
@@ -234,6 +269,11 @@ class FileSystemManager {
      * 更新游戏记录
      */
     async updateGame(id, gameData, imageFile) {
+        await this.loadCategoryConfig();
+        if (!this.categoryCodes.includes(gameData.category)) {
+            gameData.category = 'OTHER';
+        }
+    await this.loadCategoryConfig();
         try {
             // 查找要更新的游戏
             const gameIndex = this.games.findIndex(game => game.id === id);
@@ -407,6 +447,21 @@ class FileSystemManager {
      * 搜索游戏
      */
     searchGames(query, filters = {}) {
+        if (!this.categoryCodes) {
+            // 同步加载（仅用于筛选，防止异步问题）
+            this.categoryConfig = {
+                'ADV': '冒险游戏',
+                'ACT': '动作游戏',
+                'RPG': '角色扮演',
+                'SLG': '策略游戏',
+                '3DSIM': '3D模拟',
+                'OTHER': '其他'
+            };
+            this.categoryCodes = Object.keys(this.categoryConfig);
+        }
+        if (filters.category && !this.categoryCodes.includes(filters.category)) {
+            filters.category = 'OTHER';
+        }
         let filteredGames = [...this.games];
 
         // 按游戏名搜索

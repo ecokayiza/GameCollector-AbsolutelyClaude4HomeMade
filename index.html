@@ -53,13 +53,7 @@
                     <option value="12">12月</option>
                 </select>
                 <select id="categoryFilter" class="filter-select">
-                    <option value="">所有分类</option>
-                    <option value="ADV">ADV</option>
-                    <option value="ACT">ACT</option>
-                    <option value="RPG">RPG</option>
-                    <option value="SLG">SLG</option>
-                    <option value="3DSIM">3DSIM</option>
-                    <option value="OTHER">其他</option>
+                    <!-- 分类选项将由 script.js 动态生成 -->
                 </select>
             </div>
 
@@ -118,18 +112,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="gameCategory">游戏分类 *</label>
-                    <select id="gameCategory" name="gameCategory" required>
-                        <option value="">请选择分类</option>
-                        <option value="ADV">ADV - 冒险游戏</option>
-                        <option value="ACT">ACT - 动作游戏</option>
-                        <option value="RPG">RPG - 角色扮演</option>
-                        <option value="SLG">SLG - 策略游戏</option>
-                        <option value="3DSIM">3DSIM - 3D模拟</option>
-                        <option value="OTHER">其他</option>
-                    </select>
-                </div>
+                <!-- 分类选择表单组将由 script.js 动态插入 -->
 
                 <div class="form-group">
                     <label for="gameTime">游戏时长 (小时)</label>

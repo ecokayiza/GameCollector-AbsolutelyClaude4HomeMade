@@ -1,0 +1,10 @@
+{
+  "categories": [
+    { "code": "ADV", "name": "冒险游戏" },
+    { "code": "ACT", "name": "动作游戏" },
+    { "code": "RPG", "name": "角色扮演" },
+    { "code": "SLG", "name": "策略游戏" },
+    { "code": "3DSIM", "name": "3D模拟" },
+    { "code": "OTHER", "name": "其他" }
+  ]
+}
